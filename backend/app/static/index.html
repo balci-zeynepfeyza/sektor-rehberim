@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sektör Rehberim - Anonim Yorum MVP</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      :root {
+        --bg: #0b0f17;
+        --card: #111827;
+        --text: #e5e7eb;
+        --muted: #9ca3af;
+        --accent: #60a5fa;
+        --danger: #fb7185;
+        --border: rgba(255, 255, 255, 0.12);
+      }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica,
+          Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        background: radial-gradient(1200px 800px at 15% 10%, rgba(96, 165, 250, 0.22), transparent),
+          radial-gradient(900px 650px at 85% 25%, rgba(251, 113, 133, 0.18), transparent),
+          var(--bg);
+        color: var(--text);
+      }
+      img {
+        max-width: 100%;
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 0 auto;
+        padding: 24px 16px 56px;
+      }
+      h1 {
+        margin: 0 0 6px;
+        font-size: 20px;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+      }
+      .sub {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.4;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      @media (min-width: 860px) {
+        .grid {
+          grid-template-columns: 1fr 1fr;
+          align-items: start;
+        }
+      }
+      .card {
+        background: rgba(17, 24, 39, 0.86);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 16px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--muted);
+        margin-bottom: 6px;
+      }
+      input,
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.18);
+        border: 1px solid var(--border);
+        color: var(--text);
+        outline: none;
+      }
+      textarea {
+        min-height: 110px;
+        resize: vertical;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      @media (min-width: 460px) {
+        .row {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .btn {
+        appearance: none;
+        border: 0;
+        border-radius: 12px;
+        padding: 11px 14px;
+        font-weight: 700;
+        background: linear-gradient(180deg, rgba(96, 165, 250, 0.95), rgba(96, 165, 250, 0.78));
+        color: #07101f;
+        cursor: pointer;
+      }
+      .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+      .btn-secondary {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text);
+      }
+      .error {
+        margin-top: 10px;
+        color: var(--danger);
+        font-weight: 650;
+        font-size: 13px;
+      }
+      .list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .comment {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.14);
+      }
+      .meta {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+      .name {
+        font-weight: 800;
+        font-size: 13px;
+      }
+      .author-btn {
+        border: 0;
+        background: transparent;
+        color: var(--text);
+        font-weight: 800;
+        font-size: 13px;
+        padding: 0;
+        cursor: pointer;
+      }
+      .comment.selected {
+        border-color: rgba(96, 165, 250, 0.8);
+        box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.25);
+      }
+      .time {
+        color: var(--muted);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+      .msg {
+        margin: 0 0 10px;
+        line-height: 1.45;
+        font-size: 14px;
+        color: var(--text);
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .ratings {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .pill {
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .pill b {
+        color: var(--text);
+        font-weight: 800;
+        margin-left: 6px;
+      }
+
+      .comment-actions {
+        display: flex;
+        justify-content: flex-start;
+        margin-top: 10px;
+      }
+      .reaction-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .reaction-btn {
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .reaction-btn.active {
+        border-color: rgba(96, 165, 250, 0.7);
+        background: rgba(96, 165, 250, 0.18);
+      }
+
+      @media (max-width: 480px) {
+        h1 {
+          font-size: 18px;
+        }
+
+        .wrap {
+          padding: 18px 12px 44px;
+        }
+
+        textarea {
+          min-height: 95px;
+        }
+
+        .btn {
+          width: 100%;
+          padding: 12px 14px;
+        }
+
+        .btn-secondary {
+          width: 100%;
+        }
+
+        .row {
+          gap: 10px;
+        }
+
+        .comment-actions {
+          justify-content: flex-start;
+        }
+
+        .comment-actions button[data-action="report"] {
+          width: 100%;
+        }
+        .reaction-bar {
+          width: 100%;
+        }
+        .reaction-btn {
+          width: 100%;
+          text-align: left;
+        }
+
+        .pill {
+          font-size: 11px;
+          padding: 6px 9px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Sektör Rehberim</h1>
+      <p class="sub">
+        Demo MVP: Aynı sayfada bir şirket için anonim mülakat deneyimi yorumu ekleyin.
+        (IP/e-posta saklanmaz.)
+      </p>
+
+      <div class="grid">
+        <div class="card">
+          <h2 style="margin:0 0 14px; font-size:16px;">Şirket & Yorum Ekle</h2>
+
+          <div class="row" style="margin-bottom: 12px;">
+            <div>
+              <label for="companyId">Şirket Seç (Aramalı)</label>
+              <input id="companyId" list="companyOptions" placeholder="Şirket ara/seç" />
+              <datalist id="companyOptions"></datalist>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button class="btn btn-secondary" id="loadBtn" type="button" style="flex:1; min-width:140px;">
+                  Yükle
+                </button>
+                <button class="btn btn-secondary" id="qrBtn" type="button" style="flex:1; min-width:140px;">
+                  QR Oluştur
+                </button>
+              </div>
+              <div
+                id="qrBox"
+                style="display:none; margin-top: 12px; border: 1px solid var(--border); border-radius: 12px; padding: 10px; background: rgba(0,0,0,0.14);"
+              >
+                <div style="color: var(--muted); font-size: 13px; margin-bottom: 8px;">
+                  QR ile aynı sayfayı aç
+                </div>
+                <img id="qrImg" alt="QR kodu" style="width:100%; max-width:240px; height:auto; display:block;" />
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="displayName">Anonim İsim (boş bırak = rastgele)</label>
+              <input
+                id="displayName"
+                placeholder="Örn: Junior Dev (boş bırakabilirsiniz)"
+              />
+            </div>
+            <div>
+              <label for="messageLenHint">&nbsp;</label>
+              <div id="messageLenHint" style="color: var(--muted); font-size: 12px; padding-top: 2px;">
+                Mesaj: 0/2000
+              </div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top: 12px;">
+            <div>
+              <label for="commentArea">Yorumun İlgili Oldugu Alan</label>
+              <select id="commentArea">
+                <option value="human_resources">Insan Kaynaklari</option>
+                <option value="software" selected>Yazilim</option>
+                <option value="product">Urun</option>
+                <option value="data">Veri</option>
+                <option value="design">Tasarim</option>
+                <option value="operations">Operasyon</option>
+                <option value="other">Diger</option>
+              </select>
+            </div>
+            <div>
+              <label for="employmentStatus">Calisan Durumu</label>
+              <select id="employmentStatus">
+                <option value="employee">Calisanim</option>
+                <option value="not_employee">Calisan degilim</option>
+                <option value="prefer_not_to_say" selected>Belirtmek istemiyorum</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin: 12px 0;">
+            <label for="areaNote">Alan Notu (Opsiyonel)</label>
+            <input id="areaNote" maxlength="120" placeholder="Orn: Backend ekip sureci / IK sureci" />
+          </div>
+
+          <div style="margin: 12px 0;">
+            <label for="message">Yorum</label>
+            <textarea id="message" maxlength="2000" placeholder="Mülakat sürecini anlat..." ></textarea>
+          </div>
+
+          <div class="row" style="margin-bottom: 12px;">
+            <div>
+              <label for="difficulty">Mülakat Zorluğu (1-5)</label>
+              <select id="difficulty">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <div>
+              <label for="balance">Çalışma Dengesi (1-5)</label>
+              <select id="balance">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3" selected>3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 12px;">
+            <label for="office">Ofis İmkanları (1-5)</label>
+            <select id="office">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3" selected>3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+            </select>
+          </div>
+
+          <button class="btn" id="submitBtn" type="button">Anonim Yorum Ekle</button>
+          <div class="error" id="errorBox" style="display:none;"></div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin:0 0 14px; font-size:16px;">Yorumlar</h2>
+          <div
+            id="ratingSummary"
+            style="color: var(--muted); font-size: 13px; margin: 0 0 12px;"
+          >
+            Şirket puanı için `Şirket ID` girip `Yükle` yapın.
+          </div>
+          <div id="comments" class="list"></div>
+        </div>
+
+        <div class="card">
+          <h2 style="margin:0 0 14px; font-size:16px;">Mülakat Soruları</h2>
+
+          <div class="row" style="margin-bottom: 12px;">
+            <div>
+              <label for="questionCategory">Kategori</label>
+              <select id="questionCategory">
+                <option value="technical">Teknik</option>
+                <option value="behavioral">Davranışsal</option>
+                <option value="general" selected>Genel</option>
+              </select>
+            </div>
+            <div>
+              <label for="questionTopic">Konu (Guncel)</label>
+              <select id="questionTopic"></select>
+            </div>
+          </div>
+          <div class="row" style="margin-bottom: 12px;">
+            <div>
+              <label>&nbsp;</label>
+              <button class="btn btn-secondary" id="loadQuestionsBtn" type="button">
+                Soruları Yükle
+              </button>
+            </div>
+            <div>
+              <label for="sampleQuestion">Ornek Soru</label>
+              <select id="sampleQuestion"></select>
+            </div>
+          </div>
+
+          <div style="margin: 12px 0;">
+            <label for="questionText">Sorulan soru</label>
+            <textarea
+              id="questionText"
+              maxlength="1000"
+              placeholder="Örn: 'Veri yapılarında zaman karmaşıklığı nasıl analiz edilir?'"
+            ></textarea>
+          </div>
+
+          <button class="btn" id="addQuestionBtn" type="button">Soru Ekle</button>
+
+          <div style="margin-top: 12px;">
+            <div style="color: var(--muted); font-size: 13px; margin-bottom: 8px;">
+              Sorular
+            </div>
+            <div id="questions" class="list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      id="reportModal"
+      style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.58); z-index: 50; align-items: center; justify-content: center; padding: 14px;"
+    >
+      <div class="card" style="width: 100%; max-width: 430px;">
+        <h3 style="margin: 0 0 10px; font-size: 16px;">Rapor Nedeni</h3>
+        <p style="margin: 0 0 12px; color: var(--muted); font-size: 13px;">
+          Lütfen rapor nedenini seçip onayla.
+        </p>
+        <label for="reportReason">Neden</label>
+        <select id="reportReason">
+          <option value="Küfür">Küfür</option>
+          <option value="Hakaret">Hakaret</option>
+          <option value="Spam">Spam</option>
+          <option value="Diğer">Diğer</option>
+        </select>
+        <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;">
+          <button id="cancelReportBtn" class="btn btn-secondary" type="button" style="flex:1; min-width:140px;">Vazgeç</button>
+          <button id="confirmReportBtn" class="btn" type="button" style="flex:1; min-width:140px;">Onayla</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const companyIdEl = document.getElementById("companyId");
+      const displayNameEl = document.getElementById("displayName");
+      const messageEl = document.getElementById("message");
+      const commentAreaEl = document.getElementById("commentArea");
+      const employmentStatusEl = document.getElementById("employmentStatus");
+      const areaNoteEl = document.getElementById("areaNote");
+      const difficultyEl = document.getElementById("difficulty");
+      const balanceEl = document.getElementById("balance");
+      const officeEl = document.getElementById("office");
+      const commentsEl = document.getElementById("comments");
+      const errorBox = document.getElementById("errorBox");
+      const loadBtn = document.getElementById("loadBtn");
+      const submitBtn = document.getElementById("submitBtn");
+      const messageLenHint = document.getElementById("messageLenHint");
+      const ratingSummaryEl = document.getElementById("ratingSummary");
+      const questionCategoryEl = document.getElementById("questionCategory");
+      const questionTopicEl = document.getElementById("questionTopic");
+      const questionTextEl = document.getElementById("questionText");
+      const addQuestionBtn = document.getElementById("addQuestionBtn");
+      const loadQuestionsBtn = document.getElementById("loadQuestionsBtn");
+      const sampleQuestionEl = document.getElementById("sampleQuestion");
+      const questionsEl = document.getElementById("questions");
+      const qrBtn = document.getElementById("qrBtn");
+      const qrBox = document.getElementById("qrBox");
+      const qrImg = document.getElementById("qrImg");
+      const companyOptionsEl = document.getElementById("companyOptions");
+      const reportModal = document.getElementById("reportModal");
+      const reportReasonEl = document.getElementById("reportReason");
+      const cancelReportBtn = document.getElementById("cancelReportBtn");
+      const confirmReportBtn = document.getElementById("confirmReportBtn");
+      const ACTOR_KEY_STORAGE_KEY = "sr_actor_key_v1";
+      let selectedCommentId = null;
+      let pendingReportCommentId = null;
+
+      const COMPANIES = [
+        { id: "google", label: "Google" },
+        { id: "microsoft", label: "Microsoft" },
+        { id: "trendyol", label: "Trendyol" },
+        { id: "hepsiburada", label: "Hepsiburada" },
+        { id: "yemeksepeti", label: "Yemeksepeti" },
+        { id: "peakgames", label: "Peak Games" },
+        { id: "logo", label: "Logo Yazılım" },
+        { id: "turkcell", label: "Turkcell" },
+      ];
+      const TOPIC_MAP = {
+        technical: [
+          "LLM ve Prompt Engineering",
+          "RAG ve Vektor Veritabani",
+          "System Design (Mikroservis)",
+          "Cloud ve Kubernetes",
+          "CI/CD ve DevOps",
+          "Observability (Logs/Metrics/Tracing)",
+          "API Guvenligi (OWASP)",
+          "Veri Modelleme ve SQL Performansi",
+        ],
+        behavioral: [
+          "Takim Ici Iletisim",
+          "Catisma Yonetimi",
+          "Liderlik ve Sorumluluk",
+          "Geri Bildirim Kulturleri",
+          "Zaman ve Oncelik Yonetimi",
+          "Uzaktan Calisma Disiplini",
+        ],
+        general: [
+          "Sirket Kultur Uyumu",
+          "Kariyer Hedefleri",
+          "Maas ve Yan Hak Beklentisi",
+          "Hibrit/Remote Tercihi",
+          "Mulkakat Deneyimi Genel",
+        ],
+      };
+
+      const SAMPLE_QUESTIONS = {
+        "LLM ve Prompt Engineering": [
+          "Prompt tasariminda halusinasyonu azaltmak icin hangi teknikleri kullanirsin?",
+          "Few-shot ve chain-of-thought yaklasimlari arasinda nasil secim yaparsin?",
+          "Bir AI ozelligi icin kalite metriklerini nasil olcersin?",
+        ],
+        "RAG ve Vektor Veritabani": [
+          "RAG mimarisinde retrieval kalitesini nasil arttirirsin?",
+          "Embedding modeli secerken hangi kriterlere bakarsin?",
+          "Top-k ve reranking stratejilerini nasil test edersin?",
+        ],
+        "System Design (Mikroservis)": [
+          "Yuksek trafikli bir yorum akisini nasil olceklersin?",
+          "Idempotency gerektiren endpoint tasarimini nasil yaparsin?",
+          "Event-driven mimaride eventual consistency sorunlarini nasil yonetirsin?",
+        ],
+        "Cloud ve Kubernetes": [
+          "Kubernetes ortaminda rolling update stratejisini nasil planlarsin?",
+          "Horizontal Pod Autoscaling icin hangi metrikler uygundur?",
+          "Cloud maliyet optimizasyonu icin ilk 3 adimin ne olur?",
+        ],
+        "CI/CD ve DevOps": [
+          "Production deploy oncesi zorunlu quality gate'leri neler olmali?",
+          "Blue-green ve canary release arasinda nasil secim yaparsin?",
+          "Pipeline'da gizli anahtarlar nasil guvenli yonetilir?",
+        ],
+        "Observability (Logs/Metrics/Tracing)": [
+          "Bir endpoint yavasladiginda root cause analizi nasil yaparsin?",
+          "SLO/SLI tanimini bir web servisi icin nasil belirlersin?",
+          "Distributed tracing'i hangi senaryoda zorunlu gorursun?",
+        ],
+        "API Guvenligi (OWASP)": [
+          "OWASP Top 10 icinde bir API icin en kritik riskler nelerdir?",
+          "Rate limiting ve abuse prevention'i nasil kurgularsin?",
+          "Input validation ve output encoding'i nerede uygularsin?",
+        ],
+        "Veri Modelleme ve SQL Performansi": [
+          "Yuksek hacimli bir tabloda index stratejisini nasil belirlersin?",
+          "N+1 sorgu problemini nasil tespit edip cozersin?",
+          "Read/write agirlikli sistemlerde partitioning ne zaman gerekir?",
+        ],
+      };
+
+      function getActorKey() {
+        let key = localStorage.getItem(ACTOR_KEY_STORAGE_KEY);
+        if (key) return key;
+        key = `actor_${crypto.randomUUID()}`;
+        localStorage.setItem(ACTOR_KEY_STORAGE_KEY, key);
+        return key;
+      }
+
+      function initCompanyOptions() {
+        companyOptionsEl.innerHTML = COMPANIES.map(
+          (c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.label)}</option>`
+        ).join("");
+      }
+
+      function getSelectedCategoryTopics() {
+        const key = questionCategoryEl.value || "general";
+        return TOPIC_MAP[key] || TOPIC_MAP.general;
+      }
+
+      function refreshTopicOptions() {
+        const topics = getSelectedCategoryTopics();
+        questionTopicEl.innerHTML = topics
+          .map((t) => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`)
+          .join("");
+        refreshSampleQuestions();
+      }
+
+      function refreshSampleQuestions() {
+        const topic = questionTopicEl.value || "";
+        const samples = SAMPLE_QUESTIONS[topic] || [
+          "Bu konu basligina uygun bir ornek soru yaziniz.",
+        ];
+        sampleQuestionEl.innerHTML = [
+          `<option value="">Ornek seciniz (opsiyonel)</option>`,
+          ...samples.map((q) => `<option value="${escapeHtml(q)}">${escapeHtml(q)}</option>`),
+        ].join("");
+      }
+
+      function openReportModal(commentId) {
+        pendingReportCommentId = commentId;
+        reportReasonEl.value = "Küfür";
+        reportModal.style.display = "flex";
+      }
+
+      function closeReportModal() {
+        pendingReportCommentId = null;
+        reportModal.style.display = "none";
+      }
+
+      function setError(msg) {
+        if (!msg) {
+          errorBox.style.display = "none";
+          errorBox.textContent = "";
+          return;
+        }
+        errorBox.style.display = "block";
+        errorBox.textContent = msg;
+      }
+
+      function getCompanyId() {
+        const v = (companyIdEl.value || "").trim();
+        return v;
+      }
+
+      function formatTime(iso) {
+        try {
+          const d = new Date(iso);
+          return d.toLocaleString("tr-TR");
+        } catch {
+          return iso;
+        }
+      }
+
+      function renderComments(comments) {
+        if (!comments || comments.length === 0) {
+          commentsEl.innerHTML = "<div style='color: var(--muted); font-size: 13px;'>Henüz yorum yok.</div>";
+          return;
+        }
+
+        commentsEl.innerHTML = comments
+          .map((c) => {
+            const selected = c.user_reaction || "";
+            const likes = Number(c.reaction_counts?.like || 0);
+            const dislikes = Number(c.reaction_counts?.dislike || 0);
+            const reports = Number(c.reaction_counts?.report || 0);
+            const selectedClass = selectedCommentId === c.id ? "selected" : "";
+            return `
+              <div class="comment ${selectedClass}">
+                <div class="meta">
+                  <div class="name">
+                    <button
+                      class="author-btn"
+                      type="button"
+                      data-action="select-comment"
+                      data-comment-id="${escapeHtml(c.id)}"
+                      title="Bu kişiyi seç"
+                    >
+                      ${escapeHtml(c.display_name)}
+                    </button>
+                  </div>
+                  <div class="time">${formatTime(c.created_at)}</div>
+                </div>
+                <p class="msg">${escapeHtml(c.message)}</p>
+                <div class="ratings">
+                  <span class="pill">Alan <b>${areaLabel(c.area)}</b></span>
+                  <span class="pill">Durum <b>${employmentLabel(c.employment_status)}</b></span>
+                  <span class="pill">Zorluk <b>${c.ratings.difficulty}</b></span>
+                  <span class="pill">Denge <b>${c.ratings.balance}</b></span>
+                  <span class="pill">Ofis <b>${c.ratings.office}</b></span>
+                </div>
+                ${
+                  c.area_note
+                    ? `<p class="msg" style="margin-top:8px;color:var(--muted);font-size:12px;">Not: ${escapeHtml(c.area_note)}</p>`
+                    : ""
+                }
+                <div class="comment-actions">
+                  <div class="reaction-bar">
+                    <button class="reaction-btn ${selected === "like" ? "active" : ""}" type="button" data-action="react" data-reaction-type="like" data-comment-id="${escapeHtml(c.id)}">
+                      👍 Like (${likes})
+                    </button>
+                    <button class="reaction-btn ${selected === "dislike" ? "active" : ""}" type="button" data-action="react" data-reaction-type="dislike" data-comment-id="${escapeHtml(c.id)}">
+                      👎 Dislike (${dislikes})
+                    </button>
+                    <button class="reaction-btn ${selected === "report" ? "active" : ""}" type="button" data-action="react" data-reaction-type="report" data-comment-id="${escapeHtml(c.id)}">
+                      🚩 Report (${reports})
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function categoryLabel(category) {
+        if (category === "technical") return "Teknik";
+        if (category === "behavioral") return "Davranışsal";
+        return "Genel";
+      }
+
+      function areaLabel(area) {
+        if (area === "human_resources") return "Insan Kaynaklari";
+        if (area === "software") return "Yazilim";
+        if (area === "product") return "Urun";
+        if (area === "data") return "Veri";
+        if (area === "design") return "Tasarim";
+        if (area === "operations") return "Operasyon";
+        return "Diger";
+      }
+
+      function employmentLabel(status) {
+        if (status === "employee") return "Calisan";
+        if (status === "not_employee") return "Calisan degil";
+        return "Belirtmek istemedi";
+      }
+
+      function renderQuestions(questions) {
+        if (!questions || questions.length === 0) {
+          questionsEl.innerHTML = "<div style='color: var(--muted); font-size: 13px;'>Henüz soru yok.</div>";
+          return;
+        }
+
+        questionsEl.innerHTML = questions
+          .map((q) => {
+            return `
+              <div class="comment">
+                <div class="meta">
+                  <div class="name">${categoryLabel(q.category)} - ${escapeHtml(q.topic || "Genel")}</div>
+                  <div class="time">${formatTime(q.created_at)}</div>
+                </div>
+                <p class="msg">${escapeHtml(q.question)}</p>
+              </div>
+            `;
+          })
+          .join("");
+      }
+
+      function renderRatingSummary(summary) {
+        if (!summary || summary.rating_count === 0) {
+          ratingSummaryEl.textContent = "Henüz puan yok (0 yorum).";
+          return;
+        }
+
+        const avgOverall = summary.avg_overall != null ? summary.avg_overall.toFixed(2) : "—";
+        const avgDifficulty = summary.avg_difficulty != null ? summary.avg_difficulty.toFixed(1) : "—";
+        const avgBalance = summary.avg_balance != null ? summary.avg_balance.toFixed(1) : "—";
+        const avgOffice = summary.avg_office != null ? summary.avg_office.toFixed(1) : "—";
+
+        ratingSummaryEl.textContent =
+          `Ortalama puan: ${avgOverall} / 5 — Zorluk ${avgDifficulty}, Denge ${avgBalance}, Ofis ${avgOffice} (${summary.rating_count} yorum)`;
+      }
+
+      function escapeHtml(str) {
+        return (str || "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+      }
+
+      async function loadRatingSummary(companyId) {
+        const res = await fetch(`/api/companies/${encodeURIComponent(companyId)}/rating-summary`);
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          throw new Error(body?.detail || `HTTP ${res.status}`);
+        }
+        const summary = await res.json();
+        renderRatingSummary(summary);
+      }
+
+      async function loadQuestions(companyId) {
+        const res = await fetch(`/api/companies/${encodeURIComponent(companyId)}/questions?limit=50`);
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          throw new Error(body?.detail || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        renderQuestions(data);
+      }
+
+      async function loadComments() {
+        const companyId = getCompanyId();
+        setError("");
+        if (!companyId) {
+          setError("Lütfen bir `Şirket ID` girin.");
+          return;
+        }
+
+        await loadRatingSummary(companyId);
+        await loadQuestions(companyId);
+
+        const actorKey = getActorKey();
+        const res = await fetch(
+          `/api/companies/${encodeURIComponent(companyId)}/comments?limit=50&actor_key=${encodeURIComponent(actorKey)}`
+        );
+        if (!res.ok) {
+          const body = await res.json().catch(() => null);
+          throw new Error(body?.detail || `HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        renderComments(data);
+      }
+
+      async function submitComment() {
+        const companyId = getCompanyId();
+        setError("");
+        if (!companyId) {
+          setError("Lütfen bir `Şirket ID` girin.");
+          return;
+        }
+
+        const message = (messageEl.value || "").trim();
+        if (!message) {
+          setError("Yorum mesajı boş olamaz.");
+          return;
+        }
+
+        const payload = {
+          // display_name boşsa server rastgele atar.
+          display_name: (displayNameEl.value || "").trim() || null,
+          area: commentAreaEl.value,
+          employment_status: employmentStatusEl.value,
+          area_note: (areaNoteEl.value || "").trim() || null,
+          message,
+          ratings: {
+            difficulty: Number(difficultyEl.value),
+            balance: Number(balanceEl.value),
+            office: Number(officeEl.value),
+          },
+        };
+
+        submitBtn.disabled = true;
+        try {
+          const res = await fetch(`/api/companies/${encodeURIComponent(companyId)}/comments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) {
+            const body = await res.json().catch(() => null);
+            throw new Error(body?.detail || `HTTP ${res.status}`);
+          }
+          await loadComments();
+          messageEl.value = "";
+          displayNameEl.value = "";
+          commentAreaEl.value = "software";
+          employmentStatusEl.value = "prefer_not_to_say";
+          areaNoteEl.value = "";
+          difficultyEl.value = "3";
+          balanceEl.value = "3";
+          officeEl.value = "3";
+          messageLenHint.textContent = "Mesaj: 0/2000";
+        } catch (e) {
+          setError(e?.message || "Bir hata oluştu.");
+        } finally {
+          submitBtn.disabled = false;
+        }
+      }
+
+      messageEl.addEventListener("input", () => {
+        messageLenHint.textContent = `Mesaj: ${messageEl.value.length}/2000`;
+      });
+
+      loadBtn.addEventListener("click", async () => {
+        try {
+          setError("");
+          await loadComments();
+        } catch (e) {
+          setError(e?.message || "Yorumlar yüklenemedi.");
+        }
+      });
+
+      submitBtn.addEventListener("click", submitComment);
+
+      addQuestionBtn.addEventListener("click", async () => {
+        const companyId = getCompanyId();
+        setError("");
+        if (!companyId) {
+          setError("Lütfen bir `Şirket ID` girin.");
+          return;
+        }
+
+        const question = (questionTextEl.value || "").trim();
+        if (!question) {
+          setError("Soru boş olamaz.");
+          return;
+        }
+
+        addQuestionBtn.disabled = true;
+        try {
+          const payload = {
+            category: questionCategoryEl.value,
+            topic: questionTopicEl.value || "Genel",
+            question,
+          };
+
+          const res = await fetch(`/api/companies/${encodeURIComponent(companyId)}/questions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (!res.ok) {
+            const body = await res.json().catch(() => null);
+            throw new Error(body?.detail || `HTTP ${res.status}`);
+          }
+
+          questionTextEl.value = "";
+          await loadQuestions(companyId);
+        } catch (e) {
+          setError(e?.message || "Soru eklenemedi.");
+        } finally {
+          addQuestionBtn.disabled = false;
+        }
+      });
+
+      loadQuestionsBtn.addEventListener("click", async () => {
+        const companyId = getCompanyId();
+        setError("");
+        if (!companyId) {
+          setError("Lütfen bir `Şirket ID` girin.");
+          return;
+        }
+        try {
+          await loadQuestions(companyId);
+        } catch (e) {
+          setError(e?.message || "Sorular yüklenemedi.");
+        }
+      });
+
+      questionCategoryEl.addEventListener("change", () => {
+        refreshTopicOptions();
+      });
+      questionTopicEl.addEventListener("change", () => {
+        refreshSampleQuestions();
+      });
+      sampleQuestionEl.addEventListener("change", () => {
+        const q = sampleQuestionEl.value || "";
+        if (!q) return;
+        questionTextEl.value = q;
+      });
+
+      qrBtn.addEventListener("click", async () => {
+        const companyId = getCompanyId();
+        setError("");
+        if (!companyId) {
+          setError("Lütfen bir `Şirket ID` girin.");
+          return;
+        }
+
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set("companyId", companyId);
+        const targetUrl = currentUrl.toString();
+        const qrUrl = `/api/qr?data=${encodeURIComponent(targetUrl)}`;
+        qrImg.onload = () => setError("");
+        qrImg.onerror = () => setError("QR kodu olusturulamadi. Lutfen tekrar deneyin.");
+        qrImg.src = qrUrl + `&t=${Date.now()}`;
+        qrBox.style.display = "block";
+      });
+
+      commentsEl.addEventListener("click", async (e) => {
+        const selectBtn = e.target.closest("[data-action='select-comment']");
+        if (selectBtn) {
+          const cid = selectBtn.getAttribute("data-comment-id") || "";
+          if (cid) {
+            selectedCommentId = cid;
+            await loadComments();
+            setError("Yorum sahibi seçildi. İstersen like/dislike/report uygulayabilirsin.");
+          }
+          return;
+        }
+
+        const btn = e.target.closest("[data-action='react']");
+        if (!btn) return;
+
+        const commentId = btn.getAttribute("data-comment-id") || "";
+        const reactionType = btn.getAttribute("data-reaction-type") || "";
+        if (!commentId) return;
+        if (!reactionType) return;
+        if (!["like", "dislike", "report"].includes(reactionType)) return;
+
+        setError("");
+        try {
+          if (reactionType === "report") {
+            openReportModal(commentId);
+            return;
+          }
+
+          btn.disabled = true;
+          const actorKey = getActorKey();
+          const res = await fetch(`/api/comments/${encodeURIComponent(commentId)}/reactions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ actor_key: actorKey, reaction_type: reactionType }),
+          });
+          if (!res.ok) {
+            const body = await res.json().catch(() => null);
+            throw new Error(body?.detail || `HTTP ${res.status}`);
+          }
+          await loadComments();
+        } catch (err) {
+          setError(err?.message || "Değerlendirme gönderilemedi.");
+          btn.disabled = false;
+        }
+      });
+
+      cancelReportBtn.addEventListener("click", () => {
+        closeReportModal();
+      });
+      reportModal.addEventListener("click", (e) => {
+        if (e.target === reportModal) closeReportModal();
+      });
+
+      confirmReportBtn.addEventListener("click", async () => {
+        if (!pendingReportCommentId) return;
+        const reason = reportReasonEl.value;
+        if (!reason) {
+          setError("Lütfen bir rapor nedeni seç.");
+          return;
+        }
+        const approved = window.confirm(`Seçilen neden: "${reason}". Raporu onaylıyor musun?`);
+        if (!approved) return;
+
+        setError("");
+        confirmReportBtn.disabled = true;
+        try {
+          const reportRes = await fetch(
+            `/api/comments/${encodeURIComponent(pendingReportCommentId)}/reports`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ reason }),
+            }
+          );
+          if (!reportRes.ok) {
+            const body = await reportRes.json().catch(() => null);
+            throw new Error(body?.detail || `HTTP ${reportRes.status}`);
+          }
+
+          const actorKey = getActorKey();
+          const reactRes = await fetch(
+            `/api/comments/${encodeURIComponent(pendingReportCommentId)}/reactions`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ actor_key: actorKey, reaction_type: "report" }),
+            }
+          );
+          if (!reactRes.ok) {
+            const body = await reactRes.json().catch(() => null);
+            throw new Error(body?.detail || `HTTP ${reactRes.status}`);
+          }
+
+          closeReportModal();
+          await loadComments();
+        } catch (e) {
+          setError(e?.message || "Rapor gönderilemedi.");
+        } finally {
+          confirmReportBtn.disabled = false;
+        }
+      });
+
+      // URL'den şirket ID geliyorsa otomatik yükle (QR tarama demo akışı).
+      const params = new URLSearchParams(window.location.search);
+      const preCompanyId = params.get("companyId");
+      initCompanyOptions();
+      refreshTopicOptions();
+      if (preCompanyId) {
+        companyIdEl.value = preCompanyId;
+        loadComments().catch((e) => setError(e?.message || "Veriler yüklenemedi."));
+      }
+
+      // Quick demo: companyId yoksa otomatik set etmiyoruz (kullanıcı girsin).
+    </script>
+  </body>
+</html>
